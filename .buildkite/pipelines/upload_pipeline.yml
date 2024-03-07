@@ -2,4 +2,4 @@
 
 steps:
   - label: Upload tested pipeline
-    command: buildkite-agent pipeline upload .buildkite/pipelines/pipeline_to_test.yml
+    command: buildkite-agent pipeline upload .buildkite/pipelines/code_coverage/daily.yml
