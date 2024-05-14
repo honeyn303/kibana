@@ -8,13 +8,13 @@
 import { ServiceParams, SubActionConnector } from '@kbn/actions-plugin/server';
 import { AxiosError, Method } from 'axios';
 // import { IncomingMessage } from 'http';
-// import { PassThrough } from 'stream';
+import { PassThrough } from 'stream';
 import { SubActionRequestParams } from '@kbn/actions-plugin/server/sub_action_framework/types';
 import { initDashboard } from '../lib/gen_ai/create_gen_ai_dashboard';
 import {
   RunActionParamsSchema,
   InvokeAIActionParamsSchema,
-  // StreamingResponseSchema,
+  StreamingResponseSchema,
   RunActionResponseSchema,
   RunApiLatestResponseSchema,
 } from '../../../common/gemini/schema';
@@ -25,7 +25,7 @@ import {
   RunActionResponse,
   InvokeAIActionParams,
   InvokeAIActionResponse,
-  // StreamActionParams,
+  StreamActionParams,
   RunApiLatestResponse,
 } from '../../../common/gemini/types';
 import { SUB_ACTION, DEFAULT_TOKEN_LIMIT } from '../../../common/gemini/constants';
@@ -90,7 +90,7 @@ export class GeminiConnector extends SubActionConnector<Config, Secrets> {
 
     this.registerSubAction({
       name: SUB_ACTION.TEST,
-      method: 'runApi',
+      method: 'invokeStream',
       schema: RunActionParamsSchema,
     });
     this.registerSubAction({
@@ -188,20 +188,88 @@ The Kibana Connector in use may need to be reconfigured with an updated Amazon G
     const path = `/v1/projects/${this.gcpProjectID}/locations/${this.gcpRegion}/publishers/google/models/${currentModel}:generateContent`;
     const accessToken = this.secrets.accessToken;
     const data = JSON.stringify(JSON.parse(body)['messages']);
-
+    console.log(accessToken, "accessToken")
     const requestArgs = {
       url: `${this.url}${path}`,
       method: 'post' as Method,
       data: data,
-      headers: { 
+      headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
       // give up to 2 minutes for response
       timeout: 120000,
     };
-    
+
     return this.runApiLatest({ ...requestArgs, responseSchema: RunApiLatestResponseSchema });
+  }
+
+
+  private async streamAPI({
+    body, 
+    model: reqModel,
+    // signal,
+    // timeout,
+ }: RunActionParams): Promise<StreamingResponse>{
+  console.log("inside stream API")
+    const currentModel = reqModel ?? this.model;
+    const path = `/v1/projects/${this.gcpProjectID}/locations/${this.gcpRegion}/publishers/google/models/${currentModel}:streamGenerateContent`;
+    const accessToken = this.secrets.accessToken;
+
+    const requestArgs = {
+      url: `${this.url}${path}`,
+      method: 'post' as Method,
+      data: body,
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      responseType: 'stream',
+      responseSchema: StreamingResponseSchema,
+      signal,
+      // give up to 2 minutes for response
+      timeout,
+    };
+
+    const response = await this.request(requestArgs);
+    // const candidate = response.data.candidates[0];
+    // const completionText = candidate.content.parts[0].text;
+    console.log("Completion:", response.data);
+
+    // return { completion: completionText }
+
+
+    return response.data.pipe(new PassThrough()); //this.runApiLatest({ ...requestArgs, responseSchema: StreamingResponseSchema });
+  }
+
+  
+  /**
+   *  takes in an array of messages and a model as inputs. It calls the streamApi method to make a
+   *  request to the Bedrock API with the formatted messages and model. It then returns a Transform stream
+   *  that pipes the response from the API through the transformToString function,
+   *  which parses the proprietary response into a string of the response text alone
+   * @param messages An array of messages to be sent to the API
+   * @param model Optional model to be used for the API request. If not provided, the default model from the connector will be used.
+   */
+  public async invokeStream({
+    body,
+    model,
+    // stopSequences,
+    // system,
+    // temperature,
+    // signal,
+    // timeout,
+  }: InvokeAIActionParams): Promise<IncomingMessage> {
+
+console.log("rohan test ", body)
+    const res = (await this.streamApi({
+      //TODO add remaining parameters to body
+      body: JSON.stringify(JSON.parse(body)),
+      model,
+      // signal,
+      // timeout,
+    })) as unknown as IncomingMessage;
+    return res;
   }
 
   public async invokeAI({
