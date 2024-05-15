@@ -182,65 +182,63 @@ The Kibana Connector in use may need to be reconfigured with an updated Amazon G
    * @param body The stringified request body to be sent in the POST request.
    * @param model Optional model to be used for the API request. If not provided, the default model from the connector will be used.
    */
-   public async runApi({ body, model: reqModel }: RunActionParams): Promise<RunActionResponse> {
+   public async runApi({
+     body,
+     model: reqModel,
+     signal,
+     timeout,
+    }: RunActionParams): Promise<RunActionResponse> {
     // set model on per request basis
     const currentModel = reqModel ?? this.model;
     const path = `/v1/projects/${this.gcpProjectID}/locations/${this.gcpRegion}/publishers/google/models/${currentModel}:generateContent`;
     const accessToken = this.secrets.accessToken;
     const data = JSON.stringify(JSON.parse(body)['messages']);
     console.log('DATA', data);
-    let text = "";
-    let formattedData = {}
 
-    if (JSON.parse(data)[0] != undefined) {
-      if ('content' in JSON.parse(data)[0]) {
-        console.log('CONTENT', JSON.parse(data)[0].content);
-        text = JSON.parse(data)[0].content.split('\n').pop().trim();
-        console.log('TEXT', text); 
-        // Creating the desired output JSON
-        formattedData = {
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  {
-                    text
-                  }
-                ]
-              }
-            ],
-            generation_config: {
-              temperature: 0,
-              maxOutputTokens: 8192
-            }
-        };
-      } 
-    }
-    
-  
-    let payload = '';
-
-    if (text != "") {
-      payload = JSON.stringify(formattedData);
-    } else {
-      payload = data;
+    interface MessagePart {
+      text: string;
     }
 
-    console.log('FORMAT', formattedData); 
-    console.log('PAYLOAD', payload)
+    interface MessageContent {
+      role: string;
+      parts: MessagePart[];
+    }
+
+    let payload: { contents: MessageContent[]; generation_config: { temperature: number; maxOutputTokens: number } } = {
+      contents: [],
+      generation_config: {
+        temperature: 0,
+        maxOutputTokens: 8192
+      }
+    };
+
+    for (const row of JSON.parse(data)) {
+      payload.contents.push({
+        role: row.role,
+        parts: [
+          {
+            text: row.content
+          }
+        ]
+      });
+    }
+
+
+    console.log('PAYLOAD', JSON.stringify(payload));
 
     const requestArgs = {
       url: `${this.url}${path}`,
       method: 'post' as Method,
-      data: payload,
-      headers: { 
+      data: JSON.stringify(payload),
+      headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
+      signal,
       // give up to 2 minutes for response
       timeout: 120000,
     };
-    
+
     return this.runApiLatest({ ...requestArgs, responseSchema: RunApiLatestResponseSchema });
   }
 
@@ -251,6 +249,7 @@ The Kibana Connector in use may need to be reconfigured with an updated Amazon G
     temperature,
     timeout,
   }: InvokeAIActionParams): Promise<InvokeAIActionResponse> {
+    console.log("rohan test",messages);
     const res = await this.runApi({
         body: JSON.stringify({messages}),
         model,
