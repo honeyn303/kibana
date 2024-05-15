@@ -7,16 +7,15 @@
 
 import { ServiceParams, SubActionConnector } from '@kbn/actions-plugin/server';
 import { AxiosError, Method } from 'axios';
-// import { IncomingMessage } from 'http';
-// import { PassThrough } from 'stream';
+import { IncomingMessage } from 'http';
 import { SubActionRequestParams } from '@kbn/actions-plugin/server/sub_action_framework/types';
 import { initDashboard } from '../lib/gen_ai/create_gen_ai_dashboard';
 import {
   RunActionParamsSchema,
   InvokeAIActionParamsSchema,
-  // StreamingResponseSchema,
   RunActionResponseSchema,
   RunApiLatestResponseSchema,
+  StreamingResponseSchema,
 } from '../../../common/gemini/schema';
 import {
   Config,
@@ -27,6 +26,7 @@ import {
   InvokeAIActionResponse,
   // StreamActionParams,
   RunApiLatestResponse,
+  StreamingResponse,
 } from '../../../common/gemini/types';
 import { SUB_ACTION, DEFAULT_TOKEN_LIMIT } from '../../../common/gemini/constants';
 import {
@@ -35,6 +35,7 @@ import {
   // StreamingResponse,
 } from '../../../common/gemini/types';
 import { DashboardActionParamsSchema } from '../../../common/gemini/schema';
+import { PassThrough } from 'stream';
 
 /** Interfaces that define the Gemini model response */
 interface Part {
@@ -210,14 +211,14 @@ The Kibana Connector in use may need to be reconfigured with an updated Amazon G
       url: `${this.url}${path}`,
       method: 'post' as Method,
       data: data,
-      headers: { 
+      headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
       // give up to 2 minutes for response
       timeout: 120000,
     };
-    
+
     return this.runApiLatest({ ...requestArgs, responseSchema: RunApiLatestResponseSchema });
   }
 
@@ -238,7 +239,7 @@ The Kibana Connector in use may need to be reconfigured with an updated Amazon G
    const accessToken = this.secrets.accessToken;
    const data = JSON.stringify(JSON.parse(body)['messages']);
    const payload = formatGeminiPayload(data);
-   
+
    const requestArgs = {
      url: `${this.url}${path}`,
      method: 'post' as Method,
@@ -252,8 +253,84 @@ The Kibana Connector in use may need to be reconfigured with an updated Amazon G
      timeout: 120000,
    };
 
-   return this.runApiLatest({ ...requestArgs, responseSchema: RunApiLatestResponseSchema });
- }
+    return this.runApiLatest({ ...requestArgs, responseSchema: RunApiLatestResponseSchema });
+  }
+
+  private async streamAPI({
+    body,
+    model: reqModel,
+    temperature,
+    signal,
+    timeout,
+  }: RunActionParams): Promise<StreamingResponse> {
+    console.log('rohan test inside stream API')
+    const currentModel = reqModel ?? this.model;
+    const path = `/v1/projects/${this.gcpProjectID}/locations/${this.gcpRegion}/publishers/google/models/${currentModel}:streamGenerateContent`;
+    const accessToken = this.secrets.accessToken;
+
+    const response = await this.request({
+      url: `${this.url}${path}`,
+      method: 'post',
+      responseSchema: StreamingResponseSchema,
+      data: body,
+      responseType: 'stream',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      signal,
+      timeout,
+    });
+    // const candidate = response.data.candidates[0];
+    // const completionText = candidate.content.parts[0].text;
+    console.log('Stream API response received');
+
+    // response.data.on('data', (chunk: any) => {
+    //   console.log('Received chunk:', chunk.toString());
+    // });
+
+    // response.data.on('end', () => {
+    //   console.log('Stream ended');
+    // });
+
+    // response.data.on('error', (err: any) => {
+    //   console.error('Stream error:', err);
+    // });
+
+
+    // return { completion: completionText }
+
+    return response.data.pipe(new PassThrough()); //this.runApiLatest({ ...requestArgs, responseSchema: StreamingResponseSchema });
+  }
+
+  /**
+   *  takes in an array of messages and a model as inputs. It calls the streamApi method to make a
+   *  request to the Bedrock API with the formatted messages and model. It then returns a Transform stream
+   *  that pipes the response from the API through the transformToString function,
+   *  which parses the proprietary response into a string of the response text alone
+   * @param messages An array of messages to be sent to the API
+   * @param model Optional model to be used for the API request. If not provided, the default model from the connector will be used.
+   */
+  public async invokeStream({
+    messages,
+    model,
+    stopSequences,
+    temperature,
+    signal,
+    timeout,
+  }: InvokeAIActionParams): Promise<IncomingMessage> {
+    console.log('rohan test messages', messages);
+    const res = (await this.streamAPI({
+      // TODO add remaining parameters to body
+      body: JSON.stringify(JSON.parse(messages)),
+      model,
+      stopSequences,
+      temperature,
+      signal,
+      timeout,
+    })) as unknown as IncomingMessage;
+    return res;
+  }
 
   public async invokeAI({
     messages,
@@ -280,7 +357,7 @@ const formatGeminiPayload = (data: string): Payload => {
           maxOutputTokens: DEFAULT_TOKEN_LIMIT
       }
   };
-  
+
   for (const row of JSON.parse(data)) {
       payload.contents.push({
           role: row.role,
@@ -291,6 +368,6 @@ const formatGeminiPayload = (data: string): Payload => {
           ]
       });
   }
-  
+
   return payload;
   };
