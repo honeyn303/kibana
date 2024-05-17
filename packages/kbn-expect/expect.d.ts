@@ -162,6 +162,7 @@ interface Assertion {
 }
 
 interface Root extends Assertion {
+  toHaveBeenCalledWith(arg0: { url: any; method: string; data: string; headers: { Authorization: any; 'Content-Type': string; }; timeout: any; responseSchema: any; }): unknown;
   not: Not;
   to: To;
   only: Only;
