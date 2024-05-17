@@ -1,7 +1,8 @@
-import { ValidatorServices } from '@kbn/actions-plugin/server/types';
-import { getConnectorType, configValidator } from './index';
 import {ActionsConfigurationUtilities} from 'x-pack/plugins/actions/server/actions_config';
 import { Config } from '../../../common/gemini/types';
+import { getConnectorType, configValidator } from './index';
+import { ValidatorServices } from '@kbn/actions-plugin/server/types';
+
 
 
 jest.mock('@kbn/i18n', () => ({

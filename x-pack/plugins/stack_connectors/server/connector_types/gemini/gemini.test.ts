@@ -1,5 +1,9 @@
-import { GeminiConnector } from './gemini';
-import { ServiceParams } from '@kbn/actions-plugin/server';
+import {
+  AxiosResponse,
+  AxiosHeaders
+} from 'axios';
+import { ActionsConfigurationUtilities } from '@kbn/actions-plugin/server/actions_config';
+import { ConnectorTokenClient } from 'x-pack/plugins/actions/server/lib/connector_token_client';
 import {
   Config,
   Secrets,
@@ -8,28 +12,23 @@ import {
   RunApiLatestResponse,
   InvokeAIActionParams
 } from '../../../common/gemini/types';
-import { ActionsConfigurationUtilities } from '@kbn/actions-plugin/server/actions_config';
+import { GeminiConnector } from './gemini';
+import type { Headers } from 'packages/core/http/core-http-server/src/router/headers';
+import {
+  KibanaRequest,
+  SavedObjectsClientContract,
+  ElasticsearchClient,
+  KibanaRequestEvents,
+  IKibanaSocket,
+} from '@kbn/core/server';
 import { Logger } from '@kbn/logging';
 import {
-    RunApiLatestResponseSchema
-  } from 'x-pack/plugins/stack_connectors/common/gemini/schema';
-  import type {
+  RunApiLatestResponseSchema
+} from 'x-pack/plugins/stack_connectors/common/gemini/schema';
+import { ServiceParams } from '@kbn/actions-plugin/server';
+import type {
     Services
   } from 'x-pack/plugins/actions/server/types';
-  import {
-    KibanaRequest,
-    SavedObjectsClientContract,
-    ElasticsearchClient,
-    KibanaRequestEvents,
-    IKibanaSocket,
-  } from '@kbn/core/server';
-  import { ConnectorTokenClient } from 'x-pack/plugins/actions/server/lib/connector_token_client';
-  import type { Headers } from 'packages/core/http/core-http-server/src/router/headers';
-  import {
-    AxiosResponse,
-    AxiosHeaders
-  } from 'axios';
-
 
 jest.mock('@kbn/actions-plugin/server/sub_action_framework/helpers/validators', () => ({
   assertURL: jest.fn(),

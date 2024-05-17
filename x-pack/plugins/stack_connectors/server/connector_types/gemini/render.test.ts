@@ -1,7 +1,8 @@
 import { renderParameterTemplates } from './render';
 import { ExecutorParams } from '@kbn/actions-plugin/server/sub_action_framework/types';
-import { SUB_ACTION } from '../../../common/gemini/constants';
 import { Logger } from '@kbn/logging';
+import { SUB_ACTION } from '../../../common/gemini/constants';
+
 
 // Mock the renderMustacheString function
 jest.mock('@kbn/actions-plugin/server/lib/mustache_renderer', () => ({
