@@ -1,13 +1,7 @@
 import { getConnectorType } from './gemini';
-<<<<<<< HEAD
-import { GeminiActionParams } from './types';
-import { GEMINI_CONNECTOR_ID, GEMINI_TITLE } from '../../../common/gemini/constants';
-import { SUB_ACTION } from '../../../common/gemini/constants';
-=======
 import { SUB_ACTION } from '../../../common/gemini/constants';
 import { GEMINI_CONNECTOR_ID, GEMINI_TITLE } from '../../../common/gemini/constants';
 import { GeminiActionParams } from './types';
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
 
 // Mock lazy imports to avoid actual loading in tests
 jest.mock('react', () => ({

@@ -1,14 +1,7 @@
-<<<<<<< HEAD
-import { ConnectorValidationFunc } from '@kbn/triggers-actions-ui-plugin/public/types';
-import React from 'react';
-import GeminiConnectorFields from './connector'; // Import your component
-import { render, screen } from '@testing-library/react';
-=======
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import GeminiConnectorFields from './connector'; // Import your component
 import { ConnectorValidationFunc } from '@kbn/triggers-actions-ui-plugin/public/types';
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
 
 // Mock the useFormData hook
 jest.mock('@kbn/es-ui-shared-plugin/static/forms/hook_form_lib', () => ({
@@ -30,12 +23,9 @@ describe('GeminiConnectorFields', () => {
         }}
       />
     );
-<<<<<<< HEAD
-=======
 
     expect(screen.getByLabelText('API Key')).toBeInTheDocument(); // Example config field
     expect(screen.getByLabelText('API Secret')).toBeInTheDocument(); // Example secrets field
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
   });
 
   it('renders the DashboardLink when in edit mode', () => {

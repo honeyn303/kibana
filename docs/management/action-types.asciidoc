@@ -11,6 +11,10 @@ a| <<bedrock-action-type,{bedrock}>>
 
 | Send a request to {bedrock}.
 
+a| <<bedrock-action-type,{gemini}>>
+
+| Send a request to {gemini}.
+
 a| <<d3security-action-type,D3 Security>>
 
 | Send a request to D3 Security.

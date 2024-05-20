@@ -1,41 +1,9 @@
-<<<<<<< HEAD
-import {
-  AxiosResponse,
-  AxiosHeaders
-} from 'axios';
-import { ActionsConfigurationUtilities } from '@kbn/actions-plugin/server/actions_config';
-import { ConnectorTokenClient } from 'x-pack/plugins/actions/server/lib/connector_token_client';
-=======
 import { GeminiConnector } from './gemini';
 import { ServiceParams } from '@kbn/actions-plugin/server';
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
 import {
   Config,
   Secrets,
   RunActionParams,
-<<<<<<< HEAD
-  RunActionResponse,
-  RunApiLatestResponse,
-  InvokeAIActionParams
-} from '../../../common/gemini/types';
-import { GeminiConnector } from './gemini';
-import type { Headers } from 'packages/core/http/core-http-server/src/router/headers';
-import {
-  KibanaRequest,
-  SavedObjectsClientContract,
-  ElasticsearchClient,
-  KibanaRequestEvents,
-  IKibanaSocket,
-} from '@kbn/core/server';
-import { Logger } from '@kbn/logging';
-import {
-  RunApiLatestResponseSchema
-} from 'x-pack/plugins/stack_connectors/common/gemini/schema';
-import { ServiceParams } from '@kbn/actions-plugin/server';
-import type {
-    Services
-  } from 'x-pack/plugins/actions/server/types';
-=======
   RunActionResponse
 } from '../../../common/gemini/types';
 import { ActionsConfigurationUtilities } from '@kbn/actions-plugin/server/actions_config';
@@ -59,7 +27,6 @@ import { Logger } from '@kbn/logging';
 import { RunApiResponse } from '@kbn/stack-connectors-plugin/common/gemini/types';
 import { RunApiResponseSchema } from '@kbn/stack-connectors-plugin/common/gemini/schema';
 
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
 
 jest.mock('@kbn/actions-plugin/server/sub_action_framework/helpers/validators', () => ({
   assertURL: jest.fn(),
@@ -182,11 +149,7 @@ describe('GeminiConnector', () => {
         gcpProjectID: 'my-project-12345',
       },
       secrets: {
-<<<<<<< HEAD
-        accessToken: 'fake-access-token',
-=======
         credentialsJson: 'some-random-string' 
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
       },
       logger: mockLogger,
       services: mockServices,
@@ -223,11 +186,7 @@ describe('GeminiConnector', () => {
             model: 'test-model'
         };
 
-<<<<<<< HEAD
-        const mockApiResponse: AxiosResponse<RunApiLatestResponse> = {
-=======
         const mockApiResponse: AxiosResponse<RunApiResponse> = {
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
             data: {
                 candidates: [{
                     content: {
@@ -253,11 +212,7 @@ describe('GeminiConnector', () => {
               (connector as jest.MockedFunction<any>).mockResolvedValueOnce(mockApiResponse);
 
 
-<<<<<<< HEAD
-        const response = await connector.runTestApi(runActionParams);
-=======
         const response = await connector.runApi(runActionParams);
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
 
         // Assert that the request was made with the correct parameters
         expect(connector).toHaveBeenCalledWith({
@@ -268,11 +223,7 @@ describe('GeminiConnector', () => {
                 'Authorization': 'Bearer fake-access-token',
                 'Content-Type': 'application/json'
             },
-<<<<<<< HEAD
-            responseSchema: RunApiLatestResponseSchema
-=======
             responseSchema: RunApiResponseSchema
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
         });
         
         // Assert the response
@@ -285,17 +236,10 @@ describe('GeminiConnector', () => {
 
   describe('invokeAI', () => {
     it('should call runApi with the correct parameters and return the response', async () => {
-<<<<<<< HEAD
-      const invokeParams: InvokeAIActionParams = {
-        messages: [{ role: 'user', content: 'Hello' }],
-        model: 'my-model',
-        temperature: 0.5,
-=======
       const invokeParams: RunActionParams = {
         body: 'Hello',
         model: 'my-model',
         signal: 0.5,
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
         timeout: 5000,
       };
 
@@ -305,17 +249,10 @@ describe('GeminiConnector', () => {
 
       jest.spyOn(connector, 'runApi' as any).mockResolvedValueOnce(mockRunApiResponse);
 
-<<<<<<< HEAD
-      const result = await connector.invokeAI(invokeParams);
-
-      expect(connector.runApi).toHaveBeenCalledWith({
-        body: JSON.stringify({ messages: invokeParams.messages }),
-=======
       const result = await connector.runApi(invokeParams);
 
       expect(connector.runApi).toHaveBeenCalledWith({
         body: JSON.stringify({ messages: invokeParams.body }),
->>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
         model: invokeParams.model,
         timeout: invokeParams.timeout,
       });
