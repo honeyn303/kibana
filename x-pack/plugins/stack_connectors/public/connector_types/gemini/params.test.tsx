@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { ActionConnectorMode } from '@kbn/triggers-actions-ui-plugin/public';
 import { ActionVariable } from '@kbn/alerting-types';
 import { DEFAULT_BODY } from './constants';
@@ -6,6 +7,16 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { SUB_ACTION } from '@kbn/stack-connectors-plugin/common/gemini/constants';
 import userEvent from '@testing-library/user-event';
+=======
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { ActionConnectorMode } from '@kbn/triggers-actions-ui-plugin/public';
+import GeminiParamsFields from './params';
+import { DEFAULT_BODY } from './constants';
+import { SUB_ACTION } from '@kbn/stack-connectors-plugin/common/gemini/constants';
+import { ActionVariable } from '@kbn/alerting-types';
+>>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
 
 interface JsonEditorWithMessageVariablesProps {
   inputTargetValue: string;

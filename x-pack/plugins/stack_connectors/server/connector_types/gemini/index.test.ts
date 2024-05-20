@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 import {ActionsConfigurationUtilities} from 'x-pack/plugins/actions/server/actions_config';
 import { Config } from '../../../common/gemini/types';
 import { getConnectorType, configValidator } from './index';
 import { ValidatorServices } from '@kbn/actions-plugin/server/types';
 
+=======
+import { ValidatorServices } from '@kbn/actions-plugin/server/types';
+import { getConnectorType, configValidator } from './index';
+import {ActionsConfigurationUtilities} from 'x-pack/plugins/actions/server/actions_config';
+import { Config } from '../../../common/gemini/types';
+>>>>>>> 41673a8f09504508fa289c0a132f1a31bee5d0dd
 
 
 jest.mock('@kbn/i18n', () => ({
