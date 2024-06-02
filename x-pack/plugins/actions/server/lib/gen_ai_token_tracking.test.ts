@@ -367,7 +367,7 @@ describe('getGenAiTokenTracking', () => {
     it('should be true with bedrock action', () => {
       expect(shouldTrackGenAiToken('.bedrock')).toEqual(true);
     });
-    it('should be true with Gemini action', () => {
+    it('should be true with gemini action', () => {
       expect(shouldTrackGenAiToken('.gemini')).toEqual(true);
     });
     it('should be false with any other action', () => {
